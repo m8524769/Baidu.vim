@@ -7,6 +7,7 @@ execute 'python import search'
 
 "检测是否支持Python
 if !has('python') && !has('python3')
+    echoerr 'Baidu.vim requires vim has python/python3 features'
     finish
 endif
 
@@ -39,6 +40,7 @@ vmap <silent> <Plug>Win_BaiduVSearch :<C-u>call GetVSelctn("window")<CR>
 
 "调用Python搜索
 function! GetSelctn(vtext, show_type) abort
+    let s:airline_text = a:vtext
     execute 'python search.main()'
 endfunction
 
@@ -60,9 +62,8 @@ endfunction
 if !exists(':Baidu')
     command! -nargs=1 Baidu call GetSelctn(<q-args>, "cmdline")
 endif
-
-if !exists(':BaiduW')
-    command! -nargs=1 BaiduW call GetSelctn(<q-args>, "window")
+if !exists(':BaiduAll')
+    command! -nargs=1 BaiduAll call GetSelctn(<q-args>, "window")
 endif
 
 "设置窗口属性
@@ -84,8 +85,18 @@ function! s:WinConfig() abort
     setl nofoldenable
     setl conceallevel=3
     setl concealcursor=icvn
+    nnoremap <buffer> j 2j
+    nnoremap <buffer> k 2k
     nnoremap <silent><buffer> q :close<CR>
     nnoremap <silent><buffer> <CR> :close<CR>
+    nnoremap <silent><buffer> m :call Others()<CR>
+endfunction
+
+"显示其他义项
+function! Others()
+    let a:vtext = s:airline_text
+    let a:show_type = 'other'
+    execute 'python search.main()'
 endfunction
 
 "打开新窗口
@@ -99,6 +110,21 @@ function! s:OpenWindow() abort
         return cwin
     endif
 endfunction
+
+"状态栏属性
+if exists('g:loaded_airline') "airline插件statusline集成
+    call airline#add_statusline_func('baidu#StatusLine')
+endif
+function! baidu#StatusLine(...) abort
+    if bufname('%') == '__BaiduSearch__'
+        let w:airline_section_a = 'Baidu'
+        let w:airline_section_b = 'SearchResult'
+        let w:airline_section_c = s:airline_text
+        let w:airline_section_x = ''
+        let w:airline_section_y = ''
+    endif
+endfunction
+
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
