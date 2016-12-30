@@ -22,6 +22,7 @@
     nmap <silent> <Leader>w <Plug>Win_BaiduSearch
     vmap <silent> <Leader>w <Plug>Win_BaiduVSearch
     " <q> 或 <CR> 退出Baidu窗口
+    " <m> 显示其他义项
 ```
 - 你也可以按自己的喜好自定义快捷键
 
@@ -29,6 +30,11 @@
 - 例:
 ```VIML
     :Baidu 江泽民
-    :BaiduW 三个代表重要思想
+    :BaiduAll 三个代表重要思想
 ```
+####Update_1 Date: 2016/12/30 周五 13:35:27
+- 优化异常处理机制
+- 更改`:BaiduW`命令为`:BaiduAll`
+- 集成Airline插件，在Statusline显示关键词
+- 新增`m`可显示其他义项（目前只能显示第二个义项）
 ##*Happy Viming !!*
