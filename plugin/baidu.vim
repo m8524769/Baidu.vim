@@ -33,6 +33,9 @@ if !hasmapto('<Plug>Win_BaiduVSearch')
     vmap <silent> <Leader>w <Plug>Win_BaiduVSearch
 endif
 
+"缓存存放路径
+let g:baidu_cache_path = '$VIM/vimfiles/bundle/Baidu.vim/cache'
+
 nmap <silent> <Plug>BaiduSearch      :call GetSelctn(expand("<cword>"), "cmdline")<CR>
 vmap <silent> <Plug>BaiduVSearch     :<C-u>call GetVSelctn("cmdline")<CR>
 nmap <silent> <Plug>Win_BaiduSearch  :call GetSelctn(expand("<cword>"), "window")<CR>
@@ -87,16 +90,25 @@ function! s:WinConfig() abort
     setl concealcursor=icvn
     nnoremap <buffer> j 2j
     nnoremap <buffer> k 2k
-    nnoremap <silent><buffer> q :close<CR>
-    nnoremap <silent><buffer> <CR> :close<CR>
+    nnoremap <silent><buffer> q :call BaiduSearch_Quit()<CR>
+    nnoremap <silent><buffer> <CR> :call BaiduSearch_Quit()<CR>
     nnoremap <silent><buffer> m :call Others()<CR>
 endfunction
 
+"退出窗口，删除临时文件并重置索引
+function! BaiduSearch_Quit()
+    execute "silent !rm ./.BaiduTemp.txt"
+    execute "close"
+    let g:item = 0
+endfunction
+
 "显示其他义项
+let g:item = 0
 function! Others()
     let a:vtext = s:airline_text
     let a:show_type = 'other'
     execute 'python search.main()'
+    let g:item += 1
 endfunction
 
 "打开新窗口
@@ -124,7 +136,6 @@ function! baidu#StatusLine(...) abort
         let w:airline_section_y = ''
     endif
 endfunction
-
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
