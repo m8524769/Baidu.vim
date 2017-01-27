@@ -55,6 +55,22 @@ def get_others():
         descs.insert(0, selection)              #将标题插入结果
         return descs
 
+# 获取连词结果
+def get_multiple(words):
+    word_list = words.split('_')           #以'_'为界分离关键词
+    descs = []
+    locate = creat_cache()                 #创建缓存文件并返回完整路径
+    for each in word_list:                 #分别搜索各词
+        descs.append('< %s > ---------------------------' % each)
+        cache = scan_cache(each, locate)   #扫描缓存内是否有该词的数据
+        if cache:
+            descs.append(cache)
+        else:
+            html = get_html("http://baike.baidu.com/item/%s" % each)
+            brief = get_brief(html)
+            descs.append(brief)
+            save_data(each, brief, locate) #将结果保存到缓存
+    return descs
 
 # Vim中显示结果
 def show_result(result, show_type):                  #((str|list), str)
@@ -63,16 +79,21 @@ def show_result(result, show_type):                  #((str|list), str)
     else:
         if show_type == 'cmdline':                   #命令行中输出结果
             print(result)
-        elif show_type == 'window':                  #新建窗口输出结果
+        else:                                        #新建窗口输出结果
             cwinnr = int(vim.eval('s:OpenWindow()')) #获取新窗口编号
             vim.command(str(cwinnr) + ' wincmd w')   #跳转到该窗口
             cbuf = vim.current.buffer                #获取当前窗口Buffer
             vim.command('setl modifiable')           #使窗口内数据可修改
             vim.command('%d _')
-            for para in result:                      #执行迭代并输出结果
-                cbuf.append(u'\t%s' % para.get_text().replace('\n', ''))
-                cbuf.append("\n")
-            cbuf.append("\t\t\t\t\t\t\t\t\t\t\t  [M]ore 更多其他义项.. [Q]uit 退出")
+            if show_type == 'window':
+                for para in result:
+                    cbuf.append(u'\t%s' % para.get_text().replace('\n', ''))
+                    cbuf.append("\n")
+                cbuf.append("\t\t\t\t\t\t\t\t\t\t  [M]ore 更多其他义项.. [Q]uit 退出")
+            elif show_type == 'multiple':
+                for each in result:
+                    cbuf.append('%s' % each)
+                cbuf.append("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[Q]uit 退出")
             vim.command('0d _')
             vim.command('setl nomodifiable')         #锁定窗口内数据
 
@@ -83,20 +104,27 @@ def main():
         show_type = vim.eval('a:show_type')  #获取Vim传入的数据
         print('关键词: %s' % keyword)
 
-        locate = creat_cache()               #创建缓存文件并返回完整路径
-        cache = scan_cache(keyword, locate)  #扫描缓存内是否有该关键词的数据
-        if cache and show_type == 'cmdline':
-            show_result(cache, 'cmdline')    #直接输出
-        else:
-            html = get_html("http://baike.baidu.com/item/%s" % keyword)
+        for each in keyword:
+            if each == '_':            #判断关键词是否被'_'分隔
+                show_type = 'multiple' #更改输出形式为multiple(默认窗口显示)
+                show_result(get_multiple(keyword), 'multiple')
 
-            if show_type == 'cmdline':
+        if show_type == 'cmdline':
+            locate = creat_cache()               #创建缓存文件并返回完整路径
+            cache = scan_cache(keyword, locate)  #扫描缓存内是否有该关键词的数据
+            if cache:
+                show_result(cache, 'cmdline')    #直接输出
+            else:
+                html = get_html("http://baike.baidu.com/item/%s" % keyword)
                 brief = get_brief(html)
                 show_result(brief, 'cmdline')
                 save_data(keyword, brief, locate) #将结果保存到缓存
-            elif show_type == 'window':
+                
+        else:
+            html = get_html("http://baike.baidu.com/item/%s" % keyword)
+            if show_type == 'window':
                 show_result(get_all(html), 'window')
-            elif show_type == 'other':
+            if show_type == 'other':
                 show_result(get_others(), 'window')
 
     except Exception as err:      #捕获常规异常
