@@ -2,14 +2,14 @@
 
 ###简单实现Vim划词搜索功能
 * 支持快速搜索光标下词条以及可视模式下的选词搜索
-* 支持Baidu及BaiduW命令进行搜索
+* 支持Baidu及BaiduAll命令进行搜索
 * 要求Vim版本支持Python或Python3+
 * 使用时需要联网
 * 仅限百度百科已有的词条
 
 ![Example](Example.gif)
 
-###安装
+###安装 (通过Vundle.vim)
 ```VIML
     Plugin 'm8524769/baidu.vim'
     :PluginInstall
@@ -48,5 +48,11 @@
 - 优化异常处理
 - 用户可自定义缓存路径
   * 只能在Vim根目录下的某个文件夹
-  
+
+####Update_3 Date: 2017/1/28 周六 0:36:20
+- 可识别以下划线分隔的多个英文单词
+    * 例如'A_B_C'的关键词会默认以窗口模式输出各个结果
+    * 'A', 'B', 'C'均可写入缓存以便下次读取
+
+
 ##*Happy Viming !!*
