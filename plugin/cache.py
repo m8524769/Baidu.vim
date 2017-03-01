@@ -27,8 +27,8 @@ def scan_cache(info, cache):              #(str, str)
 
 def save_data(info, desc, cache):         #(str, str, str)
     data = open(cache, 'a')               #打开缓存文件
-    data.write('item/%s\n' % info)        #写入关键词
-    data.write('%s\n' % desc)             #写入词条简介
+    data.write('\nitem/%s\n' % info)      #写入关键词
+    data.write(desc.encode('utf-8'))      #写入词条简介
     data.close()
 
 def creat_temp(infos):                    #(str)
