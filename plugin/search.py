@@ -3,7 +3,7 @@
 
 import re
 import urllib
-import sys
+import socket
 import vim
 from bs4 import BeautifulSoup
 from cache import creat_cache, scan_cache, save_data, creat_temp
@@ -11,29 +11,28 @@ from cache import creat_cache, scan_cache, save_data, creat_temp
 # 获取网页源码
 def get_html(url):      #(str)
     try:
+        socket.setdefaulttimeout(4)   #全局默认超时时间为4秒
         page = urllib.urlopen(url)
     except:
-        raise Exception("请检查网络连接.. _(:3 」∠)_")
+        raise Exception("请检查网络连接.. _(:3」∠)_")
     else:
         html = page.read()
         return html
 
 # 截取简介
 def get_brief(html):
-    brief = r'"description" content="(.+?)"'
-    brief_re = re.compile(brief)
-    brief_sch = re.search(brief_re, html)  #提取<name="description">内的文字
-    if brief_sch:
-        return brief_sch.group(1)
+    Soup = BeautifulSoup(html, 'lxml')
+    brief = Soup.select('meta[name="description"]')
+    if brief:
+        return brief[0].get('content')
 
 # 截取所有描述
 def get_all(html):
     Soup = BeautifulSoup(html, 'lxml')     #lxml解析网页
     descs = Soup.select('.para')           #提取<class="para">内的文字
-    other = r'subview\/\d+\/\d+\.htm\#viewPageContent'
-    other_re = re.compile(other)
-    other_sch = re.findall(other_re, html) #提取其他义项的部分URL
-    creat_temp(other_sch)                  #创建临时文件存放提取信息
+    urls = Soup.select('.polysemantList-wrapper > li > a')
+    urls = [each.get('href') for each in urls]
+    creat_temp(urls)                  #创建临时文件存放提取信息
     if descs:
         return descs
 
@@ -47,21 +46,21 @@ def get_others():
         raise Exception("没有更多义项了呦..")
     else:
         for curline in lines[item : item+1]:    #找到第item行
-            temp = curline                      #提取部分URL
-        html = get_html("http://baike.baidu.com/%s" % temp)
+            info = curline                      #提取部分URL
+        html = get_html("http://baike.baidu.com%s" % info)
         Soup = BeautifulSoup(html, 'lxml')
         descs = Soup.select('.para')            #再次提取描述文字
-        selection = Soup.select('.selected')[0] #找到该义项的标题
-        descs.insert(0, selection)              #将标题插入结果
+        title = Soup.select('.selected')[0] #找到该义项的标题
+        descs.insert(0, title)              #将标题插入结果
         return descs
 
 # 获取连词结果
 def get_multiple(words):
-    word_list = words.split('_')           #以'_'为界分离关键词
+    word_list = re.split(r'[_,;\s]\s*', words) #分离关键词
     descs = []
     locate = creat_cache()                 #创建缓存文件并返回完整路径
     for each in word_list:                 #分别搜索各词
-        descs.append('< %s > ---------------------------' % each)
+        descs.append('</%s >---------------------------' % each)
         cache = scan_cache(each, locate)   #扫描缓存内是否有该词的数据
         if cache:
             descs.append(cache)
@@ -69,7 +68,8 @@ def get_multiple(words):
             html = get_html("http://baike.baidu.com/item/%s" % each)
             brief = get_brief(html)
             descs.append(brief)
-            save_data(each, brief, locate) #将结果保存到缓存
+            if brief:
+                save_data(each, brief, locate) #将结果保存到缓存
     return descs
 
 # Vim中显示结果
@@ -105,7 +105,7 @@ def main():
         print('关键词: %s' % keyword)
 
         for each in keyword:
-            if each == '_':            #判断关键词是否被'_'分隔
+            if each in ['_', ',', ';', ' ']:            #判断关键词是否被'_'分隔
                 show_type = 'multiple' #更改输出形式为multiple(默认窗口显示)
                 show_result(get_multiple(keyword), 'multiple')
 
@@ -120,16 +120,16 @@ def main():
                 show_result(brief, 'cmdline')
                 save_data(keyword, brief, locate) #将结果保存到缓存
                 
-        else:
+        elif show_type == 'window' or show_type == 'other':
             html = get_html("http://baike.baidu.com/item/%s" % keyword)
             if show_type == 'window':
                 show_result(get_all(html), 'window')
             if show_type == 'other':
                 show_result(get_others(), 'window')
 
-    except Exception as err:      #捕获常规异常
+    except socket.timeout:
+        print("请求超时.. _(:3」∠)_")
+    except Exception as err:              #捕获常规异常
         print('Error: %s' % err)
-    except:
-        print('Unknown Error: 未知错误')
 
 __all__ = ['main']
