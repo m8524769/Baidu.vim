@@ -31,8 +31,9 @@ def save_data(info, desc, cache):         #(str, str, str)
     data.write(desc.encode('utf-8'))      #写入词条简介
     data.close()
 
-def creat_temp(infos):                    #(str)
-    temp = open('.BaiduTemp.txt', 'w+')   #创建临时文件
-    for eachinfo in infos:
-        temp.write('%s\n' % eachinfo)     #写入其他义项的URL信息
-    temp.close()
+def creat_temp(urls):                    #(str)
+    if urls:
+        temp = open('.BaiduTemp.txt', 'w+')   #创建临时文件
+        for each in urls:
+            temp.write('%s\n' % each)     #写入其他义项的URL信息
+        temp.close()

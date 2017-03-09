@@ -2,9 +2,12 @@
 #!/usr/bin/env python
 
 import re
-import urllib
-import socket
 import vim
+import socket
+if vim.eval('g:py_version') == '2':
+    import urllib
+else:
+    from urllib import request as urllib
 from bs4 import BeautifulSoup
 from cache import creat_cache, scan_cache, save_data, creat_temp
 
@@ -38,9 +41,12 @@ def get_all(html):
 
 # 获取其他义项
 def get_others():
+    try:
+        tempfile = open('.BaiduTemp.txt', 'r') #读取临时文件
+        lines = tempfile.readlines()
+    except IOError:
+        raise Exception("没有其他义项..")
     item = int(vim.eval('g:item'))         #获取其他义项的索引
-    tempfile = open('.BaiduTemp.txt', 'r') #读取临时文件
-    lines = tempfile.readlines()
     if item >= len(lines):
         vim.command('let g:item = 0')      #重置索引
         raise Exception("没有更多义项了呦..")
