@@ -1,15 +1,29 @@
-"import初始化
-execute 'python import vim'
-execute 'python import sys'
-execute 'python cwd = vim.eval("expand(\"<sfile>:p:h\")")'
-execute 'python sys.path.insert(0,cwd)'
-execute 'python import search'
-
 "检测是否支持Python
-if !has('python') && !has('python3')
-    echoerr 'Baidu.vim requires vim has python/python3 features'
-    finish
+if !exists('g:py_version')
+    if has('python')
+        let g:py_version = 2
+        let s:py_cmd = 'python '
+    elseif has('python3')
+        let g:py_version = 3
+        let s:py_cmd = 'python3 '
+    else
+        echoerr 'Baidu.vim requires Vim has python/python3 features'
+        finish
+    endif
+else
+    if g:py_version == 2
+        let s:py_cmd = 'python '
+    else
+        let s:py_cmd = 'python3 '
+    endif
 endif
+    
+"初始化
+execute s:py_cmd . 'import vim'
+execute s:py_cmd . 'import sys'
+execute s:py_cmd . 'cwd = vim.eval("expand(\"<sfile>:p:h\")")'
+execute s:py_cmd . 'sys.path.insert(0,cwd)'
+execute s:py_cmd . 'import search'
 
 if !exists('g:debug_baidu') && exists('g:loaded_baidu')
     finish
@@ -44,7 +58,7 @@ vmap <silent> <Plug>Win_BaiduVSearch :<C-u>call GetVSelctn("window")<CR>
 "调用Python搜索
 function! GetSelctn(vtext, show_type) abort
     let s:airline_text = a:vtext
-    execute 'python search.main()'
+    execute s:py_cmd . 'search.main()'
 endfunction
 
 function! GetVSelctn(show_type) abort
@@ -97,7 +111,11 @@ endfunction
 
 "退出窗口，删除临时文件并重置索引
 function! BaiduSearch_Quit()
-    execute "silent !rm ./.BaiduTemp.txt"
+    if(has("win32") || has("win64"))
+        execute "silent !del /F /Q .BaiduTemp.txt"
+    else
+        execute "silent !rm ./.BaiduTemp.txt"
+    endif
     execute "close"
     let g:item = 0
 endfunction
@@ -107,7 +125,7 @@ let g:item = 0
 function! Others()
     let a:vtext = s:airline_text
     let a:show_type = 'other'
-    execute 'python search.main()'
+    execute s:py_cmd . 'search.main()'
     let g:item += 1
 endfunction
 
