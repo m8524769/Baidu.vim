@@ -112,7 +112,7 @@ endfunction
 "退出窗口，删除临时文件并重置索引
 function! BaiduSearch_Quit()
     if(has("win32") || has("win64"))
-        execute "silent !del /F /Q .BaiduTemp.txt"
+        execute "!del /q .BaiduTemp.txt"
     else
         execute "silent !rm ./.BaiduTemp.txt"
     endif
