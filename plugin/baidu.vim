@@ -23,7 +23,7 @@ execute s:py_cmd . 'import vim'
 execute s:py_cmd . 'import sys'
 execute s:py_cmd . 'cwd = vim.eval("expand(\"<sfile>:p:h\")")'
 execute s:py_cmd . 'sys.path.insert(0,cwd)'
-execute s:py_cmd . 'import search'
+execute s:py_cmd . 'from pyBaidu import search as S'
 
 if !exists('g:debug_baidu') && exists('g:loaded_baidu')
     finish
@@ -58,7 +58,7 @@ vmap <silent> <Plug>Win_BaiduVSearch :<C-u>call GetVSelctn("window")<CR>
 "调用Python搜索
 function! GetSelctn(vtext, show_type) abort
     let s:airline_text = a:vtext
-    execute s:py_cmd . 'search.main()'
+    execute s:py_cmd . 'S.main()'
 endfunction
 
 function! GetVSelctn(show_type) abort
@@ -125,7 +125,7 @@ let g:item = 0
 function! Others()
     let a:vtext = s:airline_text
     let a:show_type = 'other'
-    execute s:py_cmd . 'search.main()'
+    execute s:py_cmd . 'S.main()'
     let g:item += 1
 endfunction
 
