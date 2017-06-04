@@ -23,15 +23,18 @@ def scan_cache(info, cache):              # (str, str)
         info = "item/%s" % info
         data = open(cache, 'r')           # 读取缓存文件
         lines = iter(data.readlines())    # 将缓存内容转换为可迭代对象
-        for eachline in lines:            # 执行迭代
+        for eachline in lines:
             if eachline.strip() == info:  # 判断是否匹配到关键词
-                return lines.next()       # 返回下一行的数据
+                if vim.eval('g:py_version') == '3':
+                    return lines.__next__()   # 返回下一行的数据
+                else:
+                    return lines.next()
 
 
 def save_data(info, desc, cache):         # (str, str, str)
     data = open(cache, 'a')               # 打开缓存文件
     data.write('\nitem/%s\n' % info)      # 写入关键词
-    data.write(desc.encode('utf-8'))      # 写入词条简介
+    data.write(desc)                      # 写入词条简介
     data.close()
 
 
