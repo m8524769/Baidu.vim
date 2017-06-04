@@ -1,21 +1,17 @@
-"检测是否支持Python
+"检测Python特性
+if !has('python') && !has('python3')
+    echoerr 'Baidu.vim requires Vim has python/python3+ features'
+    finish
+endif
 if !exists('g:py_version')
-    if has('python')
-        let g:py_version = 2
-        let s:py_cmd = 'python '
-    elseif has('python3')
-        let g:py_version = 3
-        let s:py_cmd = 'python3 '
-    else
-        echoerr 'Baidu.vim requires Vim has python/python3 features'
-        finish
-    endif
+    let g:py_version = 3
+endif
+if g:py_version == 3
+    let s:py_cmd = 'python3 '
+elseif g:py_version == 2
+    let s:py_cmd = 'python '
 else
-    if g:py_version == 2
-        let s:py_cmd = 'python '
-    else
-        let s:py_cmd = 'python3 '
-    endif
+    echoerr 'Error value! g:py_version should be 2 or 3'
 endif
     
 "初始化
@@ -48,7 +44,9 @@ if !hasmapto('<Plug>Win_BaiduVSearch')
 endif
 
 "缓存存放路径
-let g:baidu_cache_path = '$VIM/vimfiles/bundle/Baidu.vim/cache'
+if !exists('g:baidu_cache_path')
+    let g:baidu_cache_path = '$VIM/vimfiles/bundle/Baidu.vim/cache'
+endif
 
 nmap <silent> <Plug>BaiduSearch      :call GetSelctn(expand("<cword>"), "cmdline")<CR>
 vmap <silent> <Plug>BaiduVSearch     :<C-u>call GetVSelctn("cmdline")<CR>
@@ -112,9 +110,9 @@ endfunction
 "退出窗口，删除临时文件并重置索引
 function! BaiduSearch_Quit()
     if(has("win32") || has("win64"))
-        execute "!del /q .BaiduTemp.txt"
+        silent execute "!del /q .BaiduTemp.txt"
     else
-        execute "silent !rm ./.BaiduTemp.txt"
+        silent execute "silent !rm ./.BaiduTemp.txt"
     endif
     execute "close"
     let g:item = 0
