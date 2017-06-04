@@ -4,12 +4,14 @@
 import re
 import vim
 import socket
+import warnings
 from bs4 import BeautifulSoup
-from cache import *
+from .cache import *
 if vim.eval('g:py_version') == '2':
     import urllib
 else:
     from urllib import request as urllib
+warnings.filterwarnings("ignore")
 
 
 #  获取网页源码
@@ -26,7 +28,7 @@ def get_html(url):      # (str)
 
 #  截取简介
 def get_brief(html):
-    Soup = BeautifulSoup(html, 'lxml')
+    Soup = BeautifulSoup(html, 'html.parser')
     brief = Soup.select('meta[name="description"]')
     if brief:
         return brief[0].get('content')
@@ -34,7 +36,7 @@ def get_brief(html):
 
 #  截取所有描述
 def get_all(html):
-    Soup = BeautifulSoup(html, 'lxml')     # lxml解析网页
+    Soup = BeautifulSoup(html, 'html.parser')     # html.parser解析网页
     descs = Soup.select('.para')            # 提取<class="para">内的文字
     urls = Soup.select('.polysemantList-wrapper > li > a')
     urls = [each.get('href') for each in urls]
@@ -59,7 +61,7 @@ def get_others():
             for curline in lines[item:item+1]:    # 找到第item行
                 info = curline                      # 提取部分URL
             html = get_html('http://baike.baidu.com' + info)
-            Soup = BeautifulSoup(html, 'lxml')
+            Soup = BeautifulSoup(html, 'html.parser')
             descs = Soup.select('.para')            # 再次提取描述文字
             title = Soup.select('.selected')[0]  # 找到该义项的标题
             descs.insert(0, title)               # 将标题插入结果
