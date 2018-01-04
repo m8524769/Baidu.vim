@@ -1,7 +1,7 @@
-# *Baidu.vim*
+# Baidu.vim
 
-[![forthebadge](http://forthebadge.com/images/badges/made-with-python.svg)](http://forthebadge.com)
-[![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)
+![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)
+![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)
 
 ### 简单实现Vim划词搜索功能
 * 支持快速搜索光标下词条以及可视模式下的选词搜索
@@ -28,6 +28,10 @@
 - 安装 bs4 Python库
 ```shell
 	pip install bs4
+```
+- Arch 用户可通过 pacman 安装bs4
+```shell
+	pacman -S python-beautifulsoup4
 ```
 
 ### 默认快捷键映射
